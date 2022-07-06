@@ -3,7 +3,7 @@
 ## Plan
 
 - [ ] Database
-- [ ] - Authentication
+- [ ] Authentication
 - [ ] Signup
 - [ ] Login
 
