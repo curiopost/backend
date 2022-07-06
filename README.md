@@ -8,5 +8,5 @@
 - [ ] Login
 
 - [ ] Crud Endpoints
-- [ ] CDN
+- [ ] The usual update, delete post, profile update system.
 - [ ] Profile System
