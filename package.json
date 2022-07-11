@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Curiopost's backend server for processing and authenticating users and posts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/curiopost/backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/curiopost/backend/issues"
+  },
+  "homepage": "https://github.com/curiopost/backend#readme",
+  "dependencies": {
+    "dotenv": "^16.0.1"
+  }
+}
