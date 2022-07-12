@@ -4,7 +4,7 @@ Curiopost's backend server for processing and authenticating users and posts.
 
 ## Plan
 
-- [ ] Database
+- [x] Database
 - [ ] Authentication
 - [ ] Signup
 - [ ] Login
