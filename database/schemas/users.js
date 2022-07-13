@@ -16,6 +16,7 @@ const users = mongoose.Schema({
     location: String,
     website: String,
     likes: Array,
+    notifications: Array
 });
 
 module.exports = mongoose.model('Users', users);
