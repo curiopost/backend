@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.JWT_PRIVATE_KEY;
 const bcrypt = require('bcrypt');
 const sendEmail = require('../functions/sendEmail');
 const validateUsername = require('../functions/validateUsername')
+const verifyVerificationToken = require('../middleware/verifyVerificationToken')
 
 const antispamlimitobject = {
     success: false,
@@ -98,6 +99,42 @@ return res.status(200).json({success: true, message: "Account created check your
 
     return res.status(500).json({success: false, message: "Unexpected error occured on our end, please try again later.", code: 500})
 }
+})
+
+router.post('/verify', antispamauth, verifyVerificationToken, async (req, res) => {
+
+    try {
+
+    users.findOne({_id: req.verification_user._id, pid: req.verification_user.pid, verified: false}, async (err, data) => {
+
+        if(data) {
+
+            const new_pid = aerect.generateID(59)
+            data.verified = true;
+            data.pid = new_pid; 
+            await data.save()
+
+            const new_user_data = await users.findOne({_id: req.verification_user._id})
+
+            const account_token_details = {
+                type: 'user_account_token',
+                _id: new_user_data._id,
+                pid: new_user_data.pid
+            }
+            const account_token = jwt.sign(account_token_details, JWT_SECRET)
+
+            return res.status(200).json({success: true, message: "Account successfully verified.", token: account_token, code: 200})
+        } else {
+
+            return res.status(400).json({success: false, message: "No data exists as requested.", code: 400})
+        }
+    })
+} catch(e) {
+    console.error(e)
+
+    return res.status(500).json({success: false, message: "Unexpected error occured on our end, please try again later.", code: 500})
+}
+
 })
 
 
