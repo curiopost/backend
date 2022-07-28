@@ -34,7 +34,7 @@ router.post('/register', antispamauth, async (req, res) => {
         return res.status(400).json({success: false, message: "Please fill up all the fields.", code: 400})
     }
     if(password.length < 4) {
-        return res.status(400).json({success: false, message: "Password must be atleast 5 characters in length.", code: 400})
+        return res.status(400).json({success: false, message: "Password must be atleast 4 characters in length.", code: 400})
 
     }
 
