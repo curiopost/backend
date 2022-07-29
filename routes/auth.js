@@ -229,7 +229,7 @@ router.post('/getuser', verifyUserToken, async (req, res) => {
     
     const total_likes = abbreviate(authorized_account.likes.length, 2)
 
-    const account_creation_date = new Date(authorized_account.created_at).toString()
+    const account_creation_date = new Date(authorized_account.created_at).toDateString()
     
     const processed_data = {
    total_following: total_following,
