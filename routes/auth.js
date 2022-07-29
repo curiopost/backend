@@ -198,7 +198,7 @@ router.post('/login', antispamauth, async (req, res) => {
 
 })
 
-router.post('/getuser', antispamauth, verifyUserToken, async (req, res) => {
+router.post('/getuser', verifyUserToken, async (req, res) => {
 
     try {
 
