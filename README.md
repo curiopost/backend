@@ -7,7 +7,7 @@ Curiopost's backend server for processing and authenticating users and posts.
 - [x] Database
 - [ ] Authentication
 - [x] Signup
-- [ ] Login
+- [x] Login
 
 - [ ] Crud Endpoints
 - [ ] The usual update, delete post, profile update system.
