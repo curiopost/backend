@@ -9,7 +9,6 @@ const bcrypt = require('bcrypt');
 const sendEmail = require('../functions/sendEmail');
 const validateUsername = require('../functions/validateUsername')
 const verifyVerificationToken = require('../middleware/verifyVerificationToken');
-const { estimatedDocumentCount } = require('../database/schemas/users');
 
 const antispamlimitobject = {
     success: false,
