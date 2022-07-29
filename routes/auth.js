@@ -94,7 +94,7 @@ router.post('/register', antispamauth, async (req, res) => {
             pid: PID
         }
         const verification_token = jwt.sign(verification_token_details, JWT_SECRET, { expiresIn: '1h' })
-        sendEmail(`Hi ${name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
+        await sendEmail(`Hi ${name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
         return res.status(200).json({ success: true, message: "Account created check your mail for a verification link to login.", code: 200 })
     } catch (e) {
         console.error(e)
@@ -170,7 +170,7 @@ router.post('/login', antispamauth, async (req, res) => {
 
         const verification_token = jwt.sign(verification_token_details, JWT_SECRET, { expiresIn: '1h' })
 
-        sendEmail(`Hi ${user.name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
+        await sendEmail(`Hi ${user.name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
 
         return res.status(405).json({success: false, message: "Email wasn't verified, we resent a link to your mail, please verify it to login.", code: 405})
 
@@ -247,6 +247,84 @@ return res.status(500).json({ success: false, message: "Unexpected error occured
    
        }
 
+})
+
+router.post('/updatepassword', antispamauth, verifyUserToken, async (req, res) => {
+    const {password, newpassword} = req.body;
+
+    try {
+
+        if(!password || !newpassword) {
+
+            return res.status(400).json({ success: false, message: "Please fill up all the fields.", code: 400 })
+
+        }
+
+        if (newpassword.length < 4) {
+            return res.status(400).json({ success: false, message: "New password must be atleast 4 characters in length.", code: 400 })
+
+        }
+
+      
+
+        const authorized_account = req.authorized_account;
+
+        users.findOne({_id: authorized_account._id}, async (err, data) => {
+
+            if(data) {
+
+                const isoldpasswordvalid = await bcrypt.compare(password, data.password)
+
+                if(!isoldpasswordvalid) {
+
+                    return res.status(400).json({success: false, message: "Old password is incorrect.", code: 400})
+                }
+                if(newpassword === password) {
+
+                    return res.status(400).json({success: false, message: "New password cannot be your old password.", code: 400})
+                }
+
+                const PID = aerect.generateID(59)
+
+                const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(newpassword, salt);
+
+        data.password = hash
+        data.pid = PID
+
+        
+        await data.save()
+
+        const new_user = await users.findOne({_id: authorized_account._id})
+
+        const token_object = {
+            type: 'user_account_token',
+            _id: new_user._id,
+            pid: new_user.pid
+        }
+
+        const new_token = jwt.sign(token_object, JWT_SECRET)
+
+        return res.status(200).json({success: true, message: "Password has been updated and all access tokens have been revoked.", token: new_token, code: 200})
+
+                
+            } else {
+
+                return res.status(400).json({ success: false, message: "No data exists as requested.", code: 400 })
+
+            }
+        })
+
+
+
+
+    } catch(e) {
+
+        console.error(e)
+   
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+
+    }
 })
 
 module.exports = router;
