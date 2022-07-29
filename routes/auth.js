@@ -7,8 +7,10 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_PRIVATE_KEY;
 const bcrypt = require('bcrypt');
 const sendEmail = require('../functions/sendEmail');
-const validateUsername = require('../functions/validateUsername')
+const validateUsername = require('../functions/validateUsername');
 const verifyVerificationToken = require('../middleware/verifyVerificationToken');
+const verifyUserToken = require('../middleware/verifyUserToken')
+const abbreviate = require('number-abbreviate');
 
 const antispamlimitobject = {
     success: false,
@@ -82,7 +84,7 @@ router.post('/register', antispamauth, async (req, res) => {
             bio: null,
             location: null,
             website: null,
-            likes: null,
+            likes: [],
             notifications: []
         }
         await users.create(user_object)
@@ -193,6 +195,57 @@ router.post('/login', antispamauth, async (req, res) => {
 
     }
 
+
+})
+
+router.post('/getuser', antispamauth, verifyUserToken, async (req, res) => {
+
+    try {
+
+    const authorized_account = req.authorized_account;
+
+    const raw_data = {
+        _id: authorized_account._id,
+        username: authorized_account.username,
+        name: authorized_account.name,
+        email: authorized_account.email,
+        verified: authorized_account.verified,
+        created_at: authorized_account.created_at,
+        following: authorized_account.following,
+        followers: authorized_account.followers,
+        avatar_url: authorized_account.avatar_url,
+        bio: authorized_account.bio,
+        location: authorized_account.location,
+        website: authorized_account.website,
+        likes: authorized_account.likes,
+        notifications: authorized_account.notifications
+    }
+
+    // processed_data is just stuff like likes but with abbreviated numbers and exact date.
+
+    const total_following = abbreviate(authorized_account.following.length, 2)
+    
+    const total_followers = abbreviate(authorized_account.followers.length, 2)
+    
+    const total_likes = abbreviate(authorized_account.likes.length, 2)
+
+    const account_creation_date = new Date(authorized_account.created_at).toString()
+    
+    const processed_data = {
+   total_following: total_following,
+   total_followers: total_followers,
+   total_likes: total_likes,
+   creation_date: account_creation_date
+    }
+
+    return res.status(200).json({success: true, message: "Token verified, details are provided in this response.", raw_data, processed_data})
+} catch(e) {
+   
+console.error(e)
+   
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+   
+       }
 
 })
 
