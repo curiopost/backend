@@ -14,7 +14,7 @@ const verifyUserToken = async(req, res, next) => {
     const tokenDetails = jwt.verify(token, JWT_SECRET)
 
     if(tokenDetails.type === "user_account_token") {
-        const user = await users.findOne({_id: tokenDetails._id, pid: tokenDetails.pid}).select('-interests').select('-password').select('-pid')
+        const user = await users.findOne({_id: tokenDetails._id, pid: tokenDetails.pid}).select('-password').select('-pid')
 
         if(!user) {
             return res.status(401).json({success: false, message: "Token is expired or invalid.", code: 401})
