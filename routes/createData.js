@@ -39,13 +39,13 @@ return res.status(400).json({success: false, message: "Attachment URL must be fr
 
 }
 
-if(mentions && typeof mentions !== "object") {
+if(mentions && !Array.isArray(mentions)) {
 
 return res.status(400).json({success: false, message: "Mentions must be an array.", code: 400})
 
 }
 
-if(topics && typeof topics !== "object") {
+if(topics && !Array.isArray(topics)) {
 
     return res.status(400).json({success: false, message: "Topics must be an array.", code: 400})
 
