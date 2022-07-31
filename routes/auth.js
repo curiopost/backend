@@ -11,7 +11,7 @@ const validateUsername = require('../functions/validateUsername');
 const verifyVerificationToken = require('../middleware/verifyVerificationToken');
 const verifyUserToken = require('../middleware/verifyUserToken')
 const abbreviate = require('number-abbreviate');
-var validator = require('validator');
+const validator = require('validator');
 
 const antispamlimitobject = {
     success: false,
