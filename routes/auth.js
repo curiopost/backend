@@ -11,6 +11,7 @@ const validateUsername = require('../functions/validateUsername');
 const verifyVerificationToken = require('../middleware/verifyVerificationToken');
 const verifyUserToken = require('../middleware/verifyUserToken')
 const abbreviate = require('number-abbreviate');
+var validator = require('validator');
 
 const antispamlimitobject = {
     success: false,
@@ -39,6 +40,13 @@ router.post('/register', antispamauth, async (req, res) => {
         if (password.length < 4) {
             return res.status(400).json({ success: false, message: "Password must be atleast 4 characters in length.", code: 400 })
 
+        }
+
+        const isLegitEmail = validator.isEmail(email)
+
+        if(!isLegitEmail) {
+
+            return res.status(400).json({success: false, message: "Please enter a valid email address", code: 400})
         }
 
         const isusernameclean = validateUsername(username)
