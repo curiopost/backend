@@ -186,6 +186,7 @@ router.get('/replies', async (req, res) => {
     
 
         const processed_object = {
+            _id: r._id,
             username: user.username,
             name: user.name,
             avatar_url: user.avatar_url || null,
