@@ -8,6 +8,9 @@ const users = require('../database/schemas/users');
 
 
 router.get('/post', async (req, res) => {
+
+    try {
+
     const ID = req.query.id;
 
     if (!ID) {
@@ -61,12 +64,21 @@ router.get('/post', async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Post found.", raw_data, processed_data, code: 200 })
 
+} catch(e) {
+
+    console.error(e)
+
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
 
 
 })
 
 
 router.get('/question', async (req, res) => {
+
+    try {
 
     const ID = req.query.id
 
@@ -122,9 +134,18 @@ router.get('/question', async (req, res) => {
 
     return res.status(200).json({ success: true, message: "Question found.", raw_data, processed_data, code: 200 })
 
+} catch(e) {
+
+    console.error(e)
+
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
 })
 
 router.get('/replies', async (req, res) => {
+
+    try {
 
     const post_id = req.query.post_id;
 
@@ -183,10 +204,17 @@ const total_replies_length = abbreviate(total_replies.length, 2)
 
     return res.status(200).json({success: true, message: "Replies found.", raw_data: raw_data, processed_data: processed_data, total_replies: total_replies_length, code: 200})
 
+} catch(e) {
 
+    console.error(e)
+
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
 })
 
 router.get('/reply', async (req, res) => {
+
+    try {
 
     const ID = req.query.id
     if(!ID) {
@@ -236,6 +264,13 @@ const processed_data = {
 }
 
 return res.status(200).json({success: true, message: "Reply Found", raw_data, processed_data, code: 200})
+
+} catch(e) {
+
+    console.error(e)
+
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
 
 
 })
