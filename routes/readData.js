@@ -186,5 +186,59 @@ const total_replies_length = abbreviate(total_replies.length, 2)
 
 })
 
+router.get('/reply', async (req, res) => {
+
+    const ID = req.query.id
+    if(!ID) {
+        return res.status(400).json({success: false, message: "Reply id is required", code: 400})
+    }
+
+   const reply = await replies.findOne({_id: ID})
+
+   if(!reply) {
+    return res.status(404).json({success: false, message: "No reply found according to the provided id.", code: 404})
+   }
+
+   const post = await posts.findOne({_id: reply.replied_to})
+   if(!post) {
+    return res.status(404).json({success: false, message: "No reply found according to the provided id.", code: 404})
+   }
+const user = await users.findOne({_id: reply.user_id})
+if(!user) {
+    return res.status(404).json({success: false, message: "No reply found according to the provided id.", code: 404})
+}
+
+const raw_data = {
+_id: reply._id,
+user_id: reply.user_id,
+replied_to: reply.replied_to,
+content: reply.content,
+attachment_url: reply.attachment_url,
+created_at: reply.created_at,
+likes: reply.likes,
+topics: reply.topics,
+mentions:reply.mentions
+
+}
+
+
+const total_likes = abbreviate(reply.likes.length, 2)
+const replied_at = new Date(reply.created_at).toDateString()
+const processed_data = {
+    username: user.username,
+    name: user.name,
+    replied_title: post.title,
+    avatar_url: user.avatar_url,
+    total_likes: total_likes,
+    created_at: replied_at
+
+
+}
+
+return res.status(200).json({success: true, message: "Reply Found", raw_data, processed_data, code: 200})
+
+
+})
+
 
 module.exports = router;
