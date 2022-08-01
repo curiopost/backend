@@ -17,6 +17,7 @@ app.use('/api/create', require('./routes/createData'))
 app.use('/api/read', require('./routes/readData'))
 app.use('/api/update', require('./routes/updateData'))
 app.use('/api/delete', require('./routes/deleteData'))
+app.set('json spaces', 1)
 
 app.get('/', async (req, res) => {
     res.sendStatus(403)
