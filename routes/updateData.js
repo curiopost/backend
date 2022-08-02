@@ -42,5 +42,35 @@ return res.status(400).json({success: false, message: "User is already followed 
 
 })
 
+router.patch('/unfollow', verifyUserToken, async (req, res) => {
+
+const user = req.authorized_account;
+const toUnFollow = req.query.username;
+
+const userToUnfollow = await users.findOne({username: toUnFollow})
+
+if(!userToUnfollow) {
+   return res.status(404).json({success: false, message: "User not found.", code: 404})
+}
+
+if(!user.following.includes(userToUnfollow._id)) {
+   return res.status(400).json({success: false, message: "You haven't followed this user to unfollow.", code: 400})
+}
+
+var newfollowers = userToUnfollow.followers.filter(i => i !== user._id)
+userToUnfollow.followers = newfollowers
+await userToUnfollow.save()
+
+const unfollower = await users.findOne({_id: user._id})
+var newfollowing = unfollower.following.filter(i => i !== userToUnfollow._id)
+
+unfollower.following = newfollowing
+await unfollower.save()
+
+return res.status(200).json({success: true, message: `Successfully unfollowed ${userToUnfollow.name}.`, code: 200})
+
+
+})
+
 
 module.exports = router;
