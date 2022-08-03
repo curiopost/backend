@@ -46,7 +46,7 @@ router.post('/register', antispamauth, async (req, res) => {
 
         if(!isLegitEmail) {
 
-            return res.status(400).json({success: false, message: "Please enter a valid email address", code: 400})
+            return res.status(400).json({success: false, message: "Please enter a valid email address.", code: 400})
         }
 
         const isusernameclean = validateUsername(username)
