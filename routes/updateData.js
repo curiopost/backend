@@ -167,6 +167,82 @@ return res.status(200).json({success: true, message: "Post successfully liked.",
 })
 
 
+router.patch('/unlike', verifyUserToken, async (req, res) => {
+
+   try {
+      
+let {id, type} = req.query
+   const user =  req.authorized_account
+   
+   if(!type) {
+      type = "post"
+   }
+   if(!id) {
+      return res.status(404).json({success: false, message: "Post or reply not found.", code: 404})
+   }
+
+   if(type === "post") {
+const post = await posts.findOne({_id: id})
+if(!post) {
+   return res.status(404).json({success: false, message: "Post not found.", code: 404})
+}
+
+if(!post.likes.includes(user._id)) {
+   return res.status(400).json({success: false, message: "You have not liked this post.", code: 400})
+}
+
+var new_post_likes = post.likes.filter(i => i !== user._id)
+post.likes = new_post_likes
+await post.save()
+
+const unLiker = await users.findOne({_id: user._id})
+
+var new_user_likes = unLiker.likes.filter(i => i !== post._id)
+unLiker.likes = new_user_likes
+await unLiker.save()
+
+const new_post_data = await posts.findOne({_id: id})
+
+const newPostLikes = abbreviate(new_post_data.likes.length, 2)
+return res.status(200).json({success: true, message: "Successfully unliked post", likes: newPostLikes, code: 200})
+   } else if(type === "reply") {
+
+      const reply = await replies.findOne({_id: id})
+      if(!reply) {
+         return res.status(404).json({success: false, message: "Reply not found.", code: 404})
+   }
+
+   if(!reply.likes.includes(user._id)) {
+      return res.status(400).json({success: false, message: "You have not liked this reply.", code: 400})
+   }
+
+   var new_reply_likes = reply.likes.filter(i => i !== user._id)
+   reply.likes = new_reply_likes
+   await reply.save()
+
+   const replyUnliker = await users.findOne({_id: user._id})
+
+   var newUnlikerLikes = replyUnliker.likes.filter(i => i !== reply._id)
+
+   replyUnliker.likes = newUnlikerLikes
+   await replyUnliker.save()
+
+   const new_reply_data = await replies.findOne({_id: id})
+const newReplyLikes = abbreviate(new_reply_data.likes.length, 2)
+return res.status(200).json({success: true, message: "Successfully unliked reply.", likes: newReplyLikes, code: 200})
+   } else {
+      return res.status(400).json({success: false, message: "Invalid type.", code: 400})
+   } 
+
+
+   } catch(e) {
+      console.error(e)
+   
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+   }
+})
+
+
 
 
 module.exports = router;
