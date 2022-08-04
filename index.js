@@ -20,16 +20,13 @@ app.use('/api/update', require('./routes/updateData'))
 app.use('/api/delete', require('./routes/deleteData'))
 
 
-app.get('/', async (req, res) => {
-    res.sendStatus(403)
-})
-
 app.get('/status', async (req, res) => {
-    res.sendStatus(200)
+    res.status(200).json({success: true, message: "All systems operational.", code: 200})
 })
 
 app.get('*', async (req, res) => {
-    res.sendStatus(404)
+    
+    res.status(404).json({success: false, message: "No matching route found.", code: 404})
 
 })
 
