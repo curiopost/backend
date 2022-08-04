@@ -243,6 +243,60 @@ return res.status(200).json({success: true, message: "Successfully unliked reply
 })
 
 
+router.patch('/post', verifyUserToken, async (req, res) => {
+
+   try {
+
+   const user = req.authorized_account
+
+const {id} = req.query;
+
+let {title, content, topics} = req.body;
+
+if(!id) {
+   return res.status(404).json({success: false, message: "Post or question not found or you may not be authorized to update it.", code: 404})
+}
+
+if(!title) {
+   return res.status(400).json({success: false, message: "Title cannot be empty.", code: 400})
+}
+
+if(!content) {
+   return res.status(400).json({success: false, message: "Content cannot be empty.", code: 400})
+}
+
+if(topics && !Array.isArray(topics)) {
+   return res.status(400).json({success: false, message: "Post topics must be an array.", code: 400})
+}
+
+if(!topics) {
+   topics = []
+}
+
+const post = await posts.findOne({_id: id, user_id: user._id})
+
+if(!post) {
+   return res.status(404).json({success: false, message: "Post or question not found or you may not be authorized to update it.", code: 404})  
+}
+
+post.title = title
+post.content = content
+post.topics = topics || []
+
+await post.save()
+
+const newPostData = await posts.findOne({_id: id, user_id: user.id})
+
+return res.status(200).json({success: true, message: `Successfully updated ${newPostData.type.toLowerCase()} data.`, data: newPostData, code: 200})
+
+} catch(e) {
+   console.error(e)
+
+ return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+})
+
 
 
 module.exports = router;
