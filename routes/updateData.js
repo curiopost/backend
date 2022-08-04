@@ -266,7 +266,7 @@ if(!content) {
 }
 
 if(topics && !Array.isArray(topics)) {
-   return res.status(400).json({success: false, message: "Post topics must be an array.", code: 400})
+   return res.status(400).json({success: false, message: "Topics must be an array.", code: 400})
 }
 
 if(!topics) {
@@ -295,6 +295,51 @@ return res.status(200).json({success: true, message: `Successfully updated ${new
  return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
 }
 
+})
+
+
+router.patch('/reply', verifyUserToken, async (req, res) => {
+
+   try {
+const user = req.authorized_account;
+
+const {id} = req.query;
+let {topics, content} = req.body;
+
+if(!id) {
+   return res.status(404).json({success: false, message: "Reply not found or you may not be authorized to update it.", code: 404})
+}
+
+if(!content) {
+   return res.status(400).json({success: false, message: "Content cannot be empty.", code: 400})
+}
+
+if(topics && !Array.isArray(topics)) {
+   return res.status(400).json({success: false, message: "Topics must be an array.", code: 400})
+}
+if(!topics) {
+   topics = []
+}
+
+const reply = await replies.findOne({_id: id, user_id: user._id})
+
+if(!reply) {
+   return res.status(404).json({success: false, message: "Reply not found or you may not be authorized to update it.", code: 404})   
+}
+
+reply.content = content
+reply.topics = topics || []
+await reply.save()
+
+const newReplyData = await replies.findOne({_id: id, user_id: user._id})
+
+return res.status(200).json({success: true, message: "Successfully updated reply data.", data: newReplyData, code: 200})
+
+   } catch(e) {
+      console.error(e)
+   
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+   }
 })
 
 
