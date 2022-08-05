@@ -385,5 +385,35 @@ return res.status(200).json({success: true, message: "Successfully updated user 
 
 })
 
+router.patch('/avatar', verifyUserToken, async (req, res) => {
+
+   try {
+
+   const user = req.authorized_account;
+
+   let {avatar} = req.body;
+
+   if(avatar && !avatar.startsWith("https://res.cloudinary.com")) {
+      return res.status(400).json({success: false, message: "Avatar URL must be from cloudinary.", code: 400})
+   }
+
+   const userToUpdate = await users.findOne({_id: user._id})
+
+   userToUpdate.avatar_url = avatar || null;
+   
+   await userToUpdate.save()
+
+   const getUpdatedUserData = await users.findOne({_id: user._id}).select('-password').select('-pid').select('-interests')
+
+   return res.status(200).json({success: true, message: "Successfully updated user avatar.", data: getUpdatedUserData, code: 200})
+
+} catch(e) {
+   console.error(e)
+
+   return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+  
+})
+
 
 module.exports = router;
