@@ -342,6 +342,48 @@ return res.status(200).json({success: true, message: "Successfully updated reply
    }
 })
 
+router.patch('/user', verifyUserToken, async (req, res) => {
+
+   try {
+
+   const user = req.authorized_account;
+   let {username, name, bio, location, website} = req.body;
+
+   if(!username) {
+      return res.status(400).json({success: false, message: "Username cannot be empty.", code: 400})
+   }
+   if(!name) {
+      return res.status(400).json({success: false, message: "Name cannot be empty.", code: 400})
+   }
+if(username !== user.username) {
+   
+   const isUsernameAvailabe = await users.findOne({username: username})
+   if(isUsernameAvailabe) {
+      return res.status(400).json({success: false, message: "Sorry this username is unavailable.", code: 400})
+   }
+}
+
+const UpdatedUser = await users.findOne({_id: user._id})
+
+UpdatedUser.username = username;
+UpdatedUser.name = name;
+UpdatedUser.bio = bio || null,
+UpdatedUser.location = location || null,
+UpdatedUser.website = website || null
+
+await UpdatedUser.save()
+
+const getUpdatedUserData = await users.findOne({_id: user._id}).select('-password').select('-pid').select('-interests')
+
+return res.status(200).json({success: true, message: "Successfully updated user data.", data: getUpdatedUserData, code: 200})
+
+} catch(e) {
+   console.error(e)
+
+ return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+})
 
 
 module.exports = router;
