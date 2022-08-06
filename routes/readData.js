@@ -158,25 +158,9 @@ router.get('/replies', async (req, res) => {
 
 
         var raw_data = []
-        var processed_data = []
+      
 
         for (const r of total_replies) {
-
-
-
-            const raw_object = {
-                _id: r._id,
-                user_id: r.user_id,
-                replied_to: r.replied_to,
-                content: r.content,
-                likes: r.likes,
-                topics: r.topics,
-                mentions: r.mentions,
-                created_at: r.created_at,
-                attachment_url: r.attachment_url
-
-            }
-
             const user = await users.findOne({ _id: r.user_id })
 
             const replied_at = new Date(r.created_at).toDateString()
@@ -184,26 +168,38 @@ router.get('/replies', async (req, res) => {
             const total_likes = abbreviate(r.likes.length, 2)
 
 
-
-            const processed_object = {
+            const raw_object = {
                 _id: r._id,
+                user_id: r.user_id,
                 username: user.username,
                 name: user.name,
                 avatar_url: user.avatar_url || null,
-                created_at: replied_at,
+                replied_to: r.replied_to,
+                content: r.content,
+                likes: r.likes,
                 total_likes: total_likes,
+                topics: r.topics,
+                mentions: r.mentions,
+                created_at: r.created_at,
+                created_date: replied_at,
+                attachment_url: r.attachment_url
 
             }
 
+        
+
+
+
+
             raw_data.push(raw_object)
-            processed_data.push(processed_object)
+          
 
         }
 
 
         const total_replies_length = abbreviate(total_replies.length, 2)
 
-        return res.status(200).json({ success: true, message: "Replies found.", raw_data: raw_data, processed_data: processed_data, total_replies: total_replies_length, code: 200 })
+        return res.status(200).json({ success: true, message: "Replies found.", data: raw_data,  total_replies: total_replies_length, code: 200 })
 
     } catch (e) {
 
