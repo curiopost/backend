@@ -352,13 +352,12 @@ router.get('/search', async (req, res) => {
     return res.status(404).json({success: false, message: "No results found.", code: 404})
    } 
 
-   const searchUserbyName = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
-   const searchUserbyUsername = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
-   const searchPostbyTitle= await posts.find()
-   const searchPostbyContent = await posts.find()
-   const searchPostbyTopics = await posts.find()
-   const getValidUsersFoundByName = searchUserbyName.filter(i => i.name.includes(q))
-   const getValidUsersFoundByUserName = searchUserbyUsername.filter(i => i.username.includes(q))
+   const searchUser = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
+
+   const searchPost = await posts.find()
+   
+   const getValidUsersFoundByName = searchUser.filter(i => i.name.includes(q))
+   const getValidUsersFoundByUserName = searchUser.filter(i => i.username.includes(q))
 
    const user_results = []
    let Userblacklist = []
@@ -379,9 +378,9 @@ router.get('/search', async (req, res) => {
    let Postblacklist = []
    const post_results = []
 
-   const getValidPostsByTitle = searchPostbyTitle.filter(i => i.title.includes(q))
-   const getValidPostsByContent = searchPostbyContent.filter(i => i.content.includes(q))
-   const getValidPostByTopics = searchPostbyTopics.filter(i => i.topics.includes(q))
+   const getValidPostsByTitle = searchPost.filter(i => i.title.includes(q))
+   const getValidPostsByContent = searchPost.filter(i => i.content.includes(q))
+   const getValidPostByTopics = searchPost.filter(i => i.topics.includes(q))
 
    for(const pt of getValidPostsByTitle) {
 const getPoster = await users.findOne({_id: pt.user_id})
