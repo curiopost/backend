@@ -286,7 +286,7 @@ router.patch('/post', verifyUserToken, async (req, res) => {
 
       await post.save()
 
-      const newPostData = await posts.findOne({ _id: id, user_id: user.id })
+      const newPostData = await posts.findOne({ _id: id, user_id: user._id })
 
       return res.status(200).json({ success: true, message: `Successfully updated ${newPostData.type.toLowerCase()} data.`, data: newPostData, code: 200 })
 

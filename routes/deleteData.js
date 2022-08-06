@@ -4,6 +4,7 @@ const verifyUserToken = require('../middleware/verifyUserToken')
 const posts = require('../database/schemas/posts');
 const replies = require('../database/schemas/replies');
 const users = require('../database/schemas/users');
+const bcrypt = require('bcrypt')
 
 router.delete('/post', verifyUserToken, async (req, res) => {
 
@@ -38,6 +39,33 @@ router.delete('/post', verifyUserToken, async (req, res) => {
     }
 
 
+})
+
+router.delete('/reply', verifyUserToken, async (req, res) => {
+    try {
+
+        const user = req.authorized_account
+
+        const { id } = req.query;
+
+        if (!id) {
+            return res.status(404).json({ success: false, message: "Reply not found or you may not be authorized to delete it.", code: 404 })
+        }
+
+        const reply = await replies.findOne({ _id: id, user_id: user._id })
+
+        if (!reply) {
+            return res.status(404).json({ success: false, message: "Reply not found or you may not be authorized to delete it.", code: 404 })
+        }
+
+        await reply.delete()
+        return res.status(200).json({ success: true, message: `Successfully deleted the reply.`, code: 200 })
+
+    } catch (e) {
+        console.error(e)
+
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+    }
 })
 
 module.exports = router;
