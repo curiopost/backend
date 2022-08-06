@@ -44,9 +44,9 @@ router.post('/register', antispamauth, async (req, res) => {
 
         const isLegitEmail = validator.isEmail(email)
 
-        if(!isLegitEmail) {
+        if (!isLegitEmail) {
 
-            return res.status(400).json({success: false, message: "Please enter a valid email address.", code: 400})
+            return res.status(400).json({ success: false, message: "Please enter a valid email address.", code: 400 })
         }
 
         const isusernameclean = validateUsername(username)
@@ -155,51 +155,51 @@ router.post('/login', antispamauth, async (req, res) => {
         return res.status(400).json({ success: false, message: "Please fill up all the fields.", code: 400 })
     }
 
-    try { 
+    try {
 
-      const user = await users.findOne({email: email})
-      
-      if(!user) {
-        return res.status(400).json({success: false, message: "Email or password is incorrect.", code: 400})
-      }
+        const user = await users.findOne({ email: email })
 
-      const ispasswordvalid = await bcrypt.compare(password, user.password)
-
-      if(!ispasswordvalid) {
-        return res.status(400).json({success: false, message: "Email or password is incorrect.", code: 400})
-      }
-
-      if(!user.verified) {
-        const verification_token_details = {
-            type: 'user_verification_token',
-            _id: user._id,
-            pid: user.pid
+        if (!user) {
+            return res.status(400).json({ success: false, message: "Email or password is incorrect.", code: 400 })
         }
 
-        const verification_token = jwt.sign(verification_token_details, JWT_SECRET, { expiresIn: '1h' })
+        const ispasswordvalid = await bcrypt.compare(password, user.password)
 
-        await sendEmail(`Hi ${user.name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
+        if (!ispasswordvalid) {
+            return res.status(400).json({ success: false, message: "Email or password is incorrect.", code: 400 })
+        }
 
-        return res.status(405).json({success: false, message: "Email wasn't verified, we resent a link to your mail, please verify it to login.", code: 405})
+        if (!user.verified) {
+            const verification_token_details = {
+                type: 'user_verification_token',
+                _id: user._id,
+                pid: user.pid
+            }
 
-      }
+            const verification_token = jwt.sign(verification_token_details, JWT_SECRET, { expiresIn: '1h' })
 
-      const account_token_details = {
-        type: 'user_account_token',
-        _id: user._id,
-        pid: user.pid
+            await sendEmail(`Hi ${user.name}\n\nWe recieved a request to verify your account, to verify please click this link: ${process.env.FRONTEND_URL}/verify?token=${verification_token} \nthis link expires in 1 hour.\n\nThanks - The Curiopost Team`, `Curiopost account verification request`, email)
 
-      }
+            return res.status(405).json({ success: false, message: "Email wasn't verified, we resent a link to your mail, please verify it to login.", code: 405 })
 
-      const account_token = jwt.sign(account_token_details, JWT_SECRET)
+        }
 
-      return res.status(200).json({success: true, message: "Login successful.", token: account_token, code: 200})
-    
-     } catch (e) {
+        const account_token_details = {
+            type: 'user_account_token',
+            _id: user._id,
+            pid: user.pid
 
-     console.error(e)
+        }
 
-     return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+        const account_token = jwt.sign(account_token_details, JWT_SECRET)
+
+        return res.status(200).json({ success: true, message: "Login successful.", token: account_token, code: 200 })
+
+    } catch (e) {
+
+        console.error(e)
+
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
 
     }
 
@@ -210,59 +210,59 @@ router.post('/getuser', verifyUserToken, async (req, res) => {
 
     try {
 
-    const authorized_account = req.authorized_account;
+        const authorized_account = req.authorized_account;
 
-    const raw_data = {
-        _id: authorized_account._id,
-        username: authorized_account.username,
-        name: authorized_account.name,
-        email: authorized_account.email,
-        verified: authorized_account.verified,
-        created_at: authorized_account.created_at,
-        following: authorized_account.following,
-        followers: authorized_account.followers,
-        avatar_url: authorized_account.avatar_url,
-        bio: authorized_account.bio,
-        location: authorized_account.location,
-        website: authorized_account.website,
-        likes: authorized_account.likes,
-        notifications: authorized_account.notifications
+        const raw_data = {
+            _id: authorized_account._id,
+            username: authorized_account.username,
+            name: authorized_account.name,
+            email: authorized_account.email,
+            verified: authorized_account.verified,
+            created_at: authorized_account.created_at,
+            following: authorized_account.following,
+            followers: authorized_account.followers,
+            avatar_url: authorized_account.avatar_url,
+            bio: authorized_account.bio,
+            location: authorized_account.location,
+            website: authorized_account.website,
+            likes: authorized_account.likes,
+            notifications: authorized_account.notifications
+        }
+
+        // processed_data is just stuff like likes but with abbreviated numbers and exact date.
+
+        const total_following = abbreviate(authorized_account.following.length, 2)
+
+        const total_followers = abbreviate(authorized_account.followers.length, 2)
+
+        const total_likes = abbreviate(authorized_account.likes.length, 2)
+
+        const account_creation_date = new Date(authorized_account.created_at).toDateString()
+
+        const processed_data = {
+            total_following: total_following,
+            total_followers: total_followers,
+            total_likes: total_likes,
+            creation_date: account_creation_date
+        }
+
+        return res.status(200).json({ success: true, message: "Token verified, details are provided in this response.", raw_data, processed_data })
+    } catch (e) {
+
+        console.error(e)
+
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+
     }
-
-    // processed_data is just stuff like likes but with abbreviated numbers and exact date.
-
-    const total_following = abbreviate(authorized_account.following.length, 2)
-    
-    const total_followers = abbreviate(authorized_account.followers.length, 2)
-    
-    const total_likes = abbreviate(authorized_account.likes.length, 2)
-
-    const account_creation_date = new Date(authorized_account.created_at).toDateString()
-    
-    const processed_data = {
-   total_following: total_following,
-   total_followers: total_followers,
-   total_likes: total_likes,
-   creation_date: account_creation_date
-    }
-
-    return res.status(200).json({success: true, message: "Token verified, details are provided in this response.", raw_data, processed_data})
-} catch(e) {
-   
-console.error(e)
-   
-return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
-   
-       }
 
 })
 
 router.post('/updatepassword', antispamauth, verifyUserToken, async (req, res) => {
-    const {password, newpassword} = req.body;
+    const { password, newpassword } = req.body;
 
     try {
 
-        if(!password || !newpassword) {
+        if (!password || !newpassword) {
 
             return res.status(400).json({ success: false, message: "Please fill up all the fields.", code: 400 })
 
@@ -273,49 +273,49 @@ router.post('/updatepassword', antispamauth, verifyUserToken, async (req, res) =
 
         }
 
-      
+
 
         const authorized_account = req.authorized_account;
 
-        users.findOne({_id: authorized_account._id}, async (err, data) => {
+        users.findOne({ _id: authorized_account._id }, async (err, data) => {
 
-            if(data) {
+            if (data) {
 
                 const isoldpasswordvalid = await bcrypt.compare(password, data.password)
 
-                if(!isoldpasswordvalid) {
+                if (!isoldpasswordvalid) {
 
-                    return res.status(400).json({success: false, message: "Old password is incorrect.", code: 400})
+                    return res.status(400).json({ success: false, message: "Old password is incorrect.", code: 400 })
                 }
-                if(newpassword === password) {
+                if (newpassword === password) {
 
-                    return res.status(400).json({success: false, message: "New password cannot be your old password.", code: 400})
+                    return res.status(400).json({ success: false, message: "New password cannot be your old password.", code: 400 })
                 }
 
                 const PID = aerect.generateID(59)
 
                 const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(newpassword, salt);
+                const hash = bcrypt.hashSync(newpassword, salt);
 
-        data.password = hash
-        data.pid = PID
+                data.password = hash
+                data.pid = PID
 
-        
-        await data.save()
 
-        const new_user = await users.findOne({_id: authorized_account._id})
+                await data.save()
 
-        const token_object = {
-            type: 'user_account_token',
-            _id: new_user._id,
-            pid: new_user.pid
-        }
+                const new_user = await users.findOne({ _id: authorized_account._id })
 
-        const new_token = jwt.sign(token_object, JWT_SECRET)
+                const token_object = {
+                    type: 'user_account_token',
+                    _id: new_user._id,
+                    pid: new_user.pid
+                }
 
-        return res.status(200).json({success: true, message: "Password has been updated and all access tokens have been revoked.", token: new_token, code: 200})
+                const new_token = jwt.sign(token_object, JWT_SECRET)
 
-                
+                return res.status(200).json({ success: true, message: "Password has been updated and all access tokens have been revoked.", token: new_token, code: 200 })
+
+
             } else {
 
                 return res.status(400).json({ success: false, message: "No data exists as requested.", code: 400 })
@@ -326,11 +326,11 @@ router.post('/updatepassword', antispamauth, verifyUserToken, async (req, res) =
 
 
 
-    } catch(e) {
+    } catch (e) {
 
         console.error(e)
-   
-return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
 
     }
 })
