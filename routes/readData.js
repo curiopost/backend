@@ -340,7 +340,148 @@ const creationDate = new Date(user.created_at).toDateString()
     console.error(e)
 return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
 }
+})
 
+router.get('/search', async (req, res) => {
+
+    try {
+
+   const {q} = req.query;
+  
+   if(!q) {
+    return res.status(404).json({success: false, message: "No results found.", code: 404})
+   } 
+
+   const searchUserbyName = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
+   const searchUserbyUsername = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
+   const searchPostbyTitle= await posts.find()
+   const searchPostbyContent = await posts.find()
+   const searchPostbyTopics = await posts.find()
+   const getValidUsersFoundByName = searchUserbyName.filter(i => i.name.includes(q))
+   const getValidUsersFoundByUserName = searchUserbyUsername.filter(i => i.username.includes(q))
+
+   const user_results = []
+   let Userblacklist = []
+
+   for (const r of getValidUsersFoundByName) {
+
+    user_results.push(r)
+    Userblacklist.push(r._id)
+}
+
+   for (const us of getValidUsersFoundByUserName) {
+    if(Userblacklist.includes(us._id)) break;
+
+    user_results.push(us)
+   
+   }
+
+   let Postblacklist = []
+   const post_results = []
+
+   const getValidPostsByTitle = searchPostbyTitle.filter(i => i.title.includes(q))
+   const getValidPostsByContent = searchPostbyContent.filter(i => i.content.includes(q))
+   const getValidPostByTopics = searchPostbyTopics.filter(i => i.topics.includes(q))
+
+   for(const pt of getValidPostsByTitle) {
+const getPoster = await users.findOne({_id: pt.user_id})
+const pt_likes = abbreviate(pt.likes.length, 2)
+const pt_created = new Date(pt.created_at).toDateString()
+
+const post_object = {
+    _id: pt._id,
+    user_id: getPoster.user_id,
+    username: getPoster.username,
+    name: pt.name,
+    avatar_url: getPoster.avatar_url,
+    created_at: pt.created_at,
+    type: pt.type,
+    content: pt.content,
+    title: pt.title,
+    attachment_url: pt.attachment_url,
+    mentions: pt.mentions,
+    likes: pt.likes,
+    total_likes: pt_likes,
+    created_date: pt_created,
+    topics: pt.topics
+}
+
+post_results.push(post_object)
+
+Postblacklist.push(pt._id)
+
+}
+
+for(const pt of getValidPostsByContent) {
+if(Postblacklist.includes(pt._id)) break;
+
+    const getPoster = await users.findOne({_id: pt.user_id})
+    const pt_likes = abbreviate(pt.likes.length, 2)
+    const pt_created = new Date(pt.created_at).toDateString()
+    
+    const post_object = {
+        _id: pt._id,
+        user_id: getPoster.user_id,
+        username: getPoster.username,
+        name: pt.name,
+        avatar_url: getPoster.avatar_url,
+        created_at: pt.created_at,
+        type: pt.type,
+        content: pt.content,
+        title: pt.title,
+        attachment_url: pt.attachment_url,
+        mentions: pt.mentions,
+        likes: pt.likes,
+        total_likes: pt_likes,
+        created_date: pt_created,
+        topics: pt.topics
+    }
+    
+    post_results.push(post_object)
+    
+    Postblacklist.push(pt._id)
+    
+    }   
+    
+    for(const pt of getValidPostByTopics) {
+        if(Postblacklist.includes(pt._id)) break;
+
+        const getPoster = await users.findOne({_id: pt.user_id})
+        const pt_likes = abbreviate(pt.likes.length, 2)
+        const pt_created = new Date(pt.created_at).toDateString()
+        
+        const post_object = {
+            _id: pt._id,
+            user_id: getPoster.user_id,
+            username: getPoster.username,
+            name: pt.name,
+            avatar_url: getPoster.avatar_url,
+            created_at: pt.created_at,
+            type: pt.type,
+            content: pt.content,
+            title: pt.title,
+            attachment_url: pt.attachment_url,
+            mentions: pt.mentions,
+            likes: pt.likes,
+            total_likes: pt_likes,
+            created_date: pt_created,
+            topics: pt.topics
+        }
+        
+        post_results.push(post_object)
+        
+        Postblacklist.push(pt._id)
+        
+        }
+
+
+   return res.status(200).json({success: true, message: "Results found.", users: user_results, posts: post_results,code: 200})
+
+} catch(e) {
+
+    console.error(e)
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
 
 })
 
