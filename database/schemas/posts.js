@@ -7,7 +7,7 @@ const posts = mongoose.Schema({
     content: String,
     attachment_url: String,
     created_at: Number,
-    type: String, // 'post' or 'question'
+    type: String, // 'POST' or 'QUESTION'
     topics: Array,
     mentions: Array,
     likes: Array

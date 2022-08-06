@@ -24,7 +24,7 @@ app.get('/status', async (req, res) => {
     res.status(200).json({success: true, message: "All systems operational.", code: 200})
 })
 
-app.get('*', async (req, res) => {
+app.all('*', async (req, res) => {
     
     res.status(404).json({success: false, message: "No matching route found.", code: 404})
 
