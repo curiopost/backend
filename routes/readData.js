@@ -264,13 +264,81 @@ const processed_data = {
 
 }
 
-return res.status(200).json({success: true, message: "Reply Found", raw_data, processed_data, code: 200})
+return res.status(200).json({success: true, message: "Reply Found.", raw_data, processed_data, code: 200})
 
 } catch(e) {
 
     console.error(e)
 
     return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+
+})
+
+router.get('/user', async(req, res) => {
+    try {
+
+    let {username} = req.query;
+    if(!username) {
+        return res.status(404).json({success: false, message: "User not found.", code: 404})
+    }
+
+    const user = await users.findOne({username: username}).select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
+    if(!user) {
+        return res.status(404).json({success: false, message: "User not found.", code: 404})
+    }
+
+    const raw_data = user
+    const uposts = await posts.find({user_id: user._id})
+const totalFolowers = abbreviate(user.followers.length, 2)
+const totalFollowing = abbreviate(user.following.length, 2)
+const totalLikes = abbreviate(user.likes.length, 2)
+const totalPosts = abbreviate(uposts.length, 2)
+const creationDate = new Date(user.created_at).toDateString()
+
+    const processed_data = {
+        _id: user._id,
+        total_followers: totalFolowers,
+        total_following: totalFollowing,
+        total_likes: totalLikes,
+        total_posts: totalPosts,
+        creation_date: creationDate
+
+    }
+
+    const user_posts = []
+    
+    for(const p of uposts) {
+
+        const postCreationDate = new Date(p.created_at).toDateString()
+        const postLikes = abbreviate(p.likes.length, 2)
+
+        const post_object = {
+            _id: p._id,
+            user_id: p.user_id,
+            title: p.title,
+            content: p.content,
+            attachment_url: p.attachment_url,
+            created_at: p.created_at,
+            type: p.type,
+            topics: p.topics,
+            mentions: p.mentions,
+            creation_date: postCreationDate,
+            likes: postLikes
+
+        }
+
+        user_posts.push(post_object)
+        
+    }
+
+    return res.status(200).json({success: true, message: "User found.", raw_data, processed_data, user_posts, code: 200})
+
+} catch(e) {
+
+    console.error(e)
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
 }
 
 
