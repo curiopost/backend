@@ -10,7 +10,7 @@ Curiopost's backend server for processing and authenticating users and posts.
 - [x] Login
 
 - [x] Create Data Endpoints
-- [ ] Read Data Endpoints
+- [x] Read Data Endpoints
 - [x] Update Data Endpoints
 - [ ] Delete Data Endpoint
 
