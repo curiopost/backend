@@ -538,5 +538,132 @@ return res.status(500).json({ success: false, message: "Unexpected error occured
 
 })
 
+router.get('/feeds', verifyUserToken, async (req, res) => {
+
+    try {
+    const user = req.authorized_account
+
+    const getPosts = await posts.find()
+
+    const filterByinterests = getPosts.filter(i => i.topics.some(topic => user.interests.includes(topic)))
+    const alreadySent = []
+    const feeds = []
+
+    for(const pt of filterByinterests) {
+
+        const getPoster = await users.findOne({_id: pt.user_id})
+        const pt_likes = abbreviate(pt.likes.length, 2)
+        const pt_created = new Date(pt.created_at).toDateString()
+        
+        const post_object = {
+            _id: pt._id,
+            user_id: getPoster.user_id,
+            username: getPoster.username,
+            name: pt.name,
+            avatar_url: getPoster.avatar_url,
+            created_at: pt.created_at,
+            type: pt.type,
+            content: pt.content,
+            title: pt.title,
+            attachment_url: pt.attachment_url,
+            mentions: pt.mentions,
+            likes: pt.likes,
+            total_likes: pt_likes,
+            created_date: pt_created,
+            topics: pt.topics
+        }
+
+
+        feeds.push(post_object)
+        alreadySent.push(pt._id)
+    
+    }
+const followerPosts = []
+   for(const following of user.following) {
+
+    const afollowerspost = await posts.find({user_id: following})
+
+    followerPosts.push(afollowerspost)
+
+
+   }
+
+   for(const pt of followerPosts) {
+
+    if(alreadySent.includes(pt._id)) break;
+
+    const getPoster = await users.findOne({_id: pt.user_id})
+        const pt_likes = abbreviate(pt.likes.length, 2)
+        const pt_created = new Date(pt.created_at).toDateString()
+        
+        const post_object = {
+            _id: pt._id,
+            user_id: getPoster.user_id,
+            username: getPoster.username,
+            name: pt.name,
+            avatar_url: getPoster.avatar_url,
+            created_at: pt.created_at,
+            type: pt.type,
+            content: pt.content,
+            title: pt.title,
+            attachment_url: pt.attachment_url,
+            mentions: pt.mentions,
+            likes: pt.likes,
+            total_likes: pt_likes,
+            created_date: pt_created,
+            topics: pt.topics
+        }
+
+
+        feeds.push(post_object)
+        alreadySent.push(pt._id)
+}
+
+const recommendations = []
+
+const sortGetPosts = getPosts.sort((a, b) => (a.likes.length < b.likes.length ? 1 : -1)).filter(i => i.likes.length > 0)
+
+for(const pt of sortGetPosts) {
+
+    if(alreadySent.includes(pt._id)) break;
+
+    const getPoster = await users.findOne({_id: pt.user_id})
+    const pt_likes = abbreviate(pt.likes.length, 2)
+    const pt_created = new Date(pt.created_at).toDateString()
+    
+    const post_object = {
+        _id: pt._id,
+        user_id: getPoster.user_id,
+        username: getPoster.username,
+        name: pt.name,
+        avatar_url: getPoster.avatar_url,
+        created_at: pt.created_at,
+        type: pt.type,
+        content: pt.content,
+        title: pt.title,
+        attachment_url: pt.attachment_url,
+        mentions: pt.mentions,
+        likes: pt.likes,
+        total_likes: pt_likes,
+        created_date: pt_created,
+        topics: pt.topics
+    }
+
+    recommendations.push(post_object)
+    alreadySent.push(pt._id)
+
+}
+
+return res.status(200).json({success: true, message: "Here's your feeds.", feeds, recommendations, topics: user.interests, code: 200})
+
+} catch(e) {
+
+    console.error(e)
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+
+})
+
 
 module.exports = router;
