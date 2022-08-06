@@ -484,5 +484,59 @@ return res.status(500).json({ success: false, message: "Unexpected error occured
 
 })
 
+router.get('/topics', async (req, res) => {
+
+    try {
+
+    const {topic} = req.query;
+
+    if(!topic) {
+        return res.status(400).json({success: false, message: "Tag is required.", code: 400})
+    }
+
+    const Getposts = await posts.find()
+
+    const Tagposts = Getposts.filter(i => i.topics.includes(topic))
+
+    const results = []
+
+    for(const pt of Tagposts) {
+        const getPoster = await users.findOne({_id: pt.user_id})
+        const pt_likes = abbreviate(pt.likes.length, 2)
+        const pt_created = new Date(pt.created_at).toDateString()
+        
+        const post_object = {
+            _id: pt._id,
+            user_id: getPoster.user_id,
+            username: getPoster.username,
+            name: pt.name,
+            avatar_url: getPoster.avatar_url,
+            created_at: pt.created_at,
+            type: pt.type,
+            content: pt.content,
+            title: pt.title,
+            attachment_url: pt.attachment_url,
+            mentions: pt.mentions,
+            likes: pt.likes,
+            total_likes: pt_likes,
+            created_date: pt_created,
+            topics: pt.topics
+        }
+
+        results.push(post_object)
+}
+
+return res.status(200).json({success: true, message: "Topic found.", posts: results, code: 200})
+
+} catch(e) {
+
+    console.error(e)
+return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+    
+
+})
+
 
 module.exports = router;
