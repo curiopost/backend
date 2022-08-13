@@ -5,6 +5,7 @@ const posts = require('../database/schemas/posts');
 const replies = require('../database/schemas/replies');
 const users = require('../database/schemas/users');
 const abbreviate = require('number-abbreviate')
+const validateUsername = require('../functions/validateUsername')
 
 router.patch('/follow', verifyUserToken, async (req, res) => {
 
@@ -361,6 +362,11 @@ router.patch('/user', verifyUserToken, async (req, res) => {
          const isUsernameAvailabe = await users.findOne({ username: username })
          if (isUsernameAvailabe) {
             return res.status(400).json({ success: false, message: "Sorry this username is unavailable.", code: 400 })
+         }
+
+         const isUsernameValid = validateUsername(username)
+         if(!isUsernameValid) {
+            return res.status(400).json({ success: false, message: "Username cannot have spaces or non URL friendly characters.", code: 400 })
          }
       }
 
