@@ -542,6 +542,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const getPosts = await posts.find()
 
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => user.interests.includes(topic)))
+       const followerFeeds =  getPosts.filter(i => user.following.includes(i.user_id))
         const alreadySent = []
         const feeds = []
 
@@ -574,19 +575,13 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
             alreadySent.push(pt._id)
 
         }
-        const followerPosts = []
-        for (const following of user.following) {
-
-            const afollowerspost = await posts.find({ user_id: following })
-
-            followerPosts.push(afollowerspost)
+   
+      
 
 
-        }
+        for (const pt of followerFeeds) {
 
-        for (const pt of followerPosts) {
-
-            if (alreadySent.includes(pt._id)) break;
+           
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -612,6 +607,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 
             feeds.push(post_object)
+          
             alreadySent.push(pt._id)
         }
 
@@ -621,7 +617,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         for (const pt of sortGetPosts) {
 
-            if (alreadySent.includes(pt._id)) break;
+       
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -650,7 +646,10 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         }
 
-        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds, recommendations, topics: user.interests, code: 200 })
+        const fixedFeeds = [...new Set(feeds)];
+        const fixedRec = [... new Set(recommendations)]
+
+        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: user.interests, code: 200 })
 
     } catch (e) {
 
