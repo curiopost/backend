@@ -540,8 +540,9 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const user = req.authorized_account
 
         const getPosts = await posts.find()
+        const userTopics = [...new Set(user.interests)]
 
-        const filterByinterests = getPosts.filter(i => i.topics.some(topic => user.interests.includes(topic)))
+        const filterByinterests = getPosts.filter(i => i.topics.some(topic => userTopics.includes(topic)))
        const followerFeeds =  getPosts.filter(i => user.following.includes(i.user_id))
     
         const feeds = []
@@ -612,6 +613,8 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         const recommendations = []
 
+        if(feeds.length < 10) {
+
         const sortGetPosts = getPosts.sort((a, b) => (a.likes.length < b.likes.length ? 1 : -1)).filter(i => i.likes.length > 0)
 
         for (const pt of sortGetPosts) {
@@ -644,10 +647,11 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         
 
         }
+    }
 
-        const fixedFeeds = [...new Set(feeds)];
+        const fixedFeeds = [...new Set(feeds)]
         const fixedRec = [... new Set(recommendations)]
-        const userTopics = [... new Set(user.interests)]
+     
 
         return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: userTopics, code: 200 })
 
