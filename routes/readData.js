@@ -543,11 +543,12 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const userTopics = [...new Set(user.interests)]
 
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => userTopics.includes(topic)))
-       const followerFeeds =  getPosts.filter(i => user.following.includes(i.user_id))
-    
+       const followerFeeds =  getPosts.filter(i => user.following.some(u => u === i.user_id))
+  
+    const totalArray = [...filterByinterests, ...followerFeeds]
         const feeds = []
 
-        for (const pt of filterByinterests) {
+        for (const pt of totalArray) {
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -578,38 +579,6 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         }
    
       
-
-
-        for (const pt of followerFeeds) {
-
-           
-
-            const getPoster = await users.findOne({ _id: pt.user_id })
-            const pt_likes = abbreviate(pt.likes.length, 2)
-            const pt_created = new Date(pt.created_at).toDateString()
-
-            const post_object = {
-                _id: pt._id,
-                user_id: getPoster.user_id,
-                username: getPoster.username,
-                name: getPoster.name,
-                avatar_url: getPoster.avatar_url,
-                created_at: pt.created_at,
-                type: pt.type,
-                content: pt.content,
-                title: pt.title,
-                attachment_url: pt.attachment_url,
-                mentions: pt.mentions,
-                likes: pt.likes,
-                total_likes: pt_likes,
-                created_date: pt_created,
-                topics: pt.topics
-            }
-
-
-            feeds.push(post_object)
-       
-        }
 
         const recommendations = []
 
