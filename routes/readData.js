@@ -543,7 +543,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => user.interests.includes(topic)))
        const followerFeeds =  getPosts.filter(i => user.following.includes(i.user_id))
-        const alreadySent = []
+    
         const feeds = []
 
         for (const pt of filterByinterests) {
@@ -572,7 +572,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 
             feeds.push(post_object)
-            alreadySent.push(pt._id)
+        
 
         }
    
@@ -607,8 +607,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 
             feeds.push(post_object)
-          
-            alreadySent.push(pt._id)
+       
         }
 
         const recommendations = []
@@ -642,14 +641,15 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
             }
 
             recommendations.push(post_object)
-            alreadySent.push(pt._id)
+        
 
         }
 
         const fixedFeeds = [...new Set(feeds)];
         const fixedRec = [... new Set(recommendations)]
+        const userTopics = [... new Set(user.interests)]
 
-        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: user.interests, code: 200 })
+        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: userTopics, code: 200 })
 
     } catch (e) {
 
