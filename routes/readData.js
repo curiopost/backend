@@ -547,6 +547,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
   
     const totalArray = [...filterByinterests, ...followerFeeds]
         const feeds = []
+        const sent=[]
 
         for (const pt of totalArray) {
 
@@ -574,6 +575,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 
             feeds.push(post_object)
+            sent.push(pt._id)
         
 
         }
@@ -582,13 +584,13 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         const recommendations = []
 
-        if(feeds.length < 10) {
+        if(feeds.length < 30) {
 
         const sortGetPosts = getPosts.sort((a, b) => (a.likes.length < b.likes.length ? 1 : -1)).filter(i => i.likes.length > 0)
 
         for (const pt of sortGetPosts) {
 
-       
+       if(sent.includes(pt._id)) { continue};
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -613,6 +615,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
             }
 
             recommendations.push(post_object)
+        
         
 
         }
