@@ -545,7 +545,9 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => userTopics.includes(topic)))
        const followerFeeds =  getPosts.filter(i => user.following.some(u => u === i.user_id))
   
-    const totalArray = [...filterByinterests, ...followerFeeds]
+    const totalArray1 = [...filterByinterests, ...followerFeeds]
+    const totalArray = [...new Set(totalArray1)]
+
 
        
         const feeds = []
