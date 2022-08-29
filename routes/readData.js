@@ -321,7 +321,8 @@ router.get('/user', async (req, res) => {
                 topics: p.topics,
                 mentions: p.mentions,
                 creation_date: postCreationDate,
-                likes: postLikes
+                likes: postLikes,
+                users_likes: p.likes
 
             }
 
