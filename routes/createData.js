@@ -361,7 +361,7 @@ router.post('/reply', verifyUserToken, async (req, res) => {
 
         await replies.create(reply_object)
 
-        return res.status(200).json({ success: true, message: "Reply successfully added.", url: `/replies/${ID}`, code: 200 })
+        return res.status(200).json({ success: true, message: "Reply successfully added.", url: `/replies/${ID}`, reply_id: ID, code: 200 })
     } catch (e) {
 
         console.error(e)
