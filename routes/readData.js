@@ -644,5 +644,22 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 })
 
+router.get('/stats', async(req, res) => {
+
+    try {
+    const getUsers = await users.find()
+    const getPosts = await posts.find({type: 'POST'})
+    const getQuestions = await posts.find({type: 'QUESTION'})
+    const getReplies = await replies.find()
+
+    return res.status(200).json({success: true, message: "Here are the stats", total_users: abbreviate(getUsers.length, 2), total_posts: abbreviate(getPosts.length, 2), total_questions: abbreviate(getQuestions.length, 2), total_replies: abbreviate(getReplies.length, 2), code: 200})
+} catch(e) {
+    console.error(e)
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+    
+})
+
 
 module.exports = router;
