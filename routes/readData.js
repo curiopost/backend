@@ -158,7 +158,7 @@ router.get('/replies', async (req, res) => {
 
 
         var raw_data = []
-      
+
 
         for (const r of total_replies) {
             const user = await users.findOne({ _id: r.user_id })
@@ -186,20 +186,20 @@ router.get('/replies', async (req, res) => {
 
             }
 
-        
+
 
 
 
 
             raw_data.push(raw_object)
-          
+
 
         }
 
 
         const total_replies_length = abbreviate(total_replies.length, 2)
 
-        return res.status(200).json({ success: true, message: "Replies found.", data: raw_data,  total_replies: total_replies_length, code: 200 })
+        return res.status(200).json({ success: true, message: "Replies found.", data: raw_data, total_replies: total_replies_length, code: 200 })
 
     } catch (e) {
 
@@ -544,15 +544,15 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const userTopics = [...new Set(user.interests)]
 
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => userTopics.includes(topic)))
-       const followerFeeds =  getPosts.filter(i => user.following.some(u => u === i.user_id))
-  
-    const totalArray1 = [...filterByinterests, ...followerFeeds]
-    const totalArray = [...new Set(totalArray1)]
+        const followerFeeds = getPosts.filter(i => user.following.some(u => u === i.user_id))
+
+        const totalArray1 = [...filterByinterests, ...followerFeeds]
+        const totalArray = [...new Set(totalArray1)]
 
 
-       
+
         const feeds = []
-        const sent=[]
+        const sent = []
 
         for (const pt of totalArray) {
 
@@ -581,57 +581,57 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
             feeds.push(post_object)
             sent.push(pt._id)
-        
+
 
         }
 
-     
-   
-      
+
+
+
 
         const recommendations = []
 
-        if(feeds.length < 30) {
+        if (feeds.length < 30) {
 
-        const sortGetPosts = getPosts.sort((a, b) => (a.likes.length < b.likes.length ? 1 : -1)).filter(i => i.likes.length > 0)
+            const sortGetPosts = getPosts.sort((a, b) => (a.likes.length < b.likes.length ? 1 : -1)).filter(i => i.likes.length > 0)
 
-        for (const pt of sortGetPosts) {
-    
+            for (const pt of sortGetPosts) {
 
-       if(sent.includes(pt._id)) { continue; }
 
-            const getPoster = await users.findOne({ _id: pt.user_id })
-            const pt_likes = abbreviate(pt.likes.length, 2)
-            const pt_created = new Date(pt.created_at).toDateString()
+                if (sent.includes(pt._id)) { continue; }
 
-            const post_object = {
-                _id: pt._id,
-                user_id: getPoster.user_id,
-                username: getPoster.username,
-                name: getPoster.name,
-                avatar_url: getPoster.avatar_url,
-                created_at: pt.created_at,
-                type: pt.type,
-                content: pt.content,
-                title: pt.title,
-                attachment_url: pt.attachment_url,
-                mentions: pt.mentions,
-                likes: pt.likes,
-                total_likes: pt_likes,
-                created_date: pt_created,
-                topics: pt.topics
+                const getPoster = await users.findOne({ _id: pt.user_id })
+                const pt_likes = abbreviate(pt.likes.length, 2)
+                const pt_created = new Date(pt.created_at).toDateString()
+
+                const post_object = {
+                    _id: pt._id,
+                    user_id: getPoster.user_id,
+                    username: getPoster.username,
+                    name: getPoster.name,
+                    avatar_url: getPoster.avatar_url,
+                    created_at: pt.created_at,
+                    type: pt.type,
+                    content: pt.content,
+                    title: pt.title,
+                    attachment_url: pt.attachment_url,
+                    mentions: pt.mentions,
+                    likes: pt.likes,
+                    total_likes: pt_likes,
+                    created_date: pt_created,
+                    topics: pt.topics
+                }
+
+                recommendations.push(post_object)
+
+
+
             }
-
-            recommendations.push(post_object)
-        
-        
-
         }
-    }
 
-        const fixedFeeds = [...new Set(feeds)].sort((a,b) => (parseFloat(b.created_at) - parseFloat(a.created_at)))
+        const fixedFeeds = [...new Set(feeds)].sort((a, b) => (parseFloat(b.created_at) - parseFloat(a.created_at)))
         const fixedRec = [...new Set(recommendations)]
-     
+
 
         return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: userTopics, code: 200 })
 
@@ -644,21 +644,104 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
 })
 
-router.get('/stats', async(req, res) => {
+router.get('/stats', async (req, res) => {
 
     try {
-    const getUsers = await users.find()
-    const getPosts = await posts.find({type: 'POST'})
-    const getQuestions = await posts.find({type: 'QUESTION'})
-    const getReplies = await replies.find()
+        const getUsers = await users.find()
+        const getPosts = await posts.find({ type: 'POST' })
+        const getQuestions = await posts.find({ type: 'QUESTION' })
+        const getReplies = await replies.find()
 
-    return res.status(200).json({success: true, message: "Here are the stats", total_users: abbreviate(getUsers.length, 2), total_posts: abbreviate(getPosts.length, 2), total_questions: abbreviate(getQuestions.length, 2), total_replies: abbreviate(getReplies.length, 2), code: 200})
-} catch(e) {
-    console.error(e)
-    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
-}
+        return res.status(200).json({ success: true, message: "Here are the stats", total_users: abbreviate(getUsers.length, 2), total_posts: abbreviate(getPosts.length, 2), total_questions: abbreviate(getQuestions.length, 2), total_replies: abbreviate(getReplies.length, 2), code: 200 })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+    }
 
-    
+
+})
+
+router.get('/following', async (req, res) => {
+
+    try {
+        const { username } = req.query;
+
+        if (!username) {
+            return res.status(400).json({ success: false, message: "Please provide a username.", code: 400 })
+        }
+
+        const getUser = await users.findOne({ username: username })
+
+        if (!getUser) {
+            return res.status(400).json({ success: false, message: "User not found.", code: 404 })
+        }
+
+
+
+        const following = []
+
+        for (const f of getUser.following) {
+            const getFollowing = await users.findOne({ _id: f })
+            const user_object = {
+                _id: f,
+                username: getFollowing.username,
+                name: getFollowing.name,
+                bio: getFollowing.bio,
+                avatar_url: getFollowing.avatar_url
+            }
+
+            following.push(user_object)
+        }
+
+        return res.status(200).json({ success: true, message: "Successfully loaded the users this user follows", following: following, code: 200 })
+
+
+
+    } catch (e) {
+        console.error(e)
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+    }
+})
+
+router.get('/followers', async (req, res) => {
+    try {
+        const { username } = req.query;
+
+        if (!username) {
+            return res.status(400).json({ success: false, message: "Please provide a username.", code: 400 })
+        }
+
+        const getUser = await users.findOne({ username: username })
+
+        if (!getUser) {
+            return res.status(400).json({ success: false, message: "User not found.", code: 404 })
+        }
+
+
+
+        const followers = []
+
+        for (const f of getUser.followers) {
+            const getFollowers = await users.findOne({ _id: f })
+            const user_object = {
+                _id: f,
+                username: getFollowers.username,
+                name: getFollowers.name,
+                bio: getFollowers.bio,
+                avatar_url: getFollowers.avatar_url
+            }
+
+            followers.push(user_object)
+        }
+
+        return res.status(200).json({ success: true, message: "Successfully loaded the followers of this user", followers: followers, code: 200 })
+
+
+
+    } catch (e) {
+        console.error(e)
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+    }
 })
 
 
