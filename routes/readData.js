@@ -541,6 +541,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
     try {
         const user = req.authorized_account
+    
 
         const getPosts = await posts.find({censored: false || undefined})
         const userTopics = [...new Set(user.interests)]
@@ -555,6 +556,10 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
 
         const feeds = []
         const sent = []
+        const TopicsFor = userTopics.sort(() => Math.random() - Math.random()).slice(0, 10)
+        const TopicsForU = [...new Set(TopicsFor)]
+
+      
 
         for (const pt of totalArray) {
 
@@ -635,7 +640,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
         const fixedRec = [...new Set(recommendations)]
 
 
-        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: userTopics, code: 200 })
+        return res.status(200).json({ success: true, message: "Here's your feeds.", feeds: fixedFeeds, recommendations: fixedRec, topics: TopicsForU, code: 200 })
 
     } catch (e) {
 
