@@ -366,7 +366,7 @@ router.get('/search', async (req, res) => {
         }
 
         for (const us of getValidUsersFoundByUserName) {
-            if (Userblacklist.includes(us._id)) break;
+            if (Userblacklist.includes(us._id)) continue;
 
             user_results.push(us)
 
@@ -409,7 +409,7 @@ router.get('/search', async (req, res) => {
         }
 
         for (const pt of getValidPostsByContent) {
-            if (Postblacklist.includes(pt._id)) break;
+            if (Postblacklist.includes(pt._id)) continue;
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -440,7 +440,7 @@ router.get('/search', async (req, res) => {
         }
 
         for (const pt of getValidPostByTopics) {
-            if (Postblacklist.includes(pt._id)) break;
+            if (Postblacklist.includes(pt._id)) continue;
 
             const getPoster = await users.findOne({ _id: pt.user_id })
             const pt_likes = abbreviate(pt.likes.length, 2)
@@ -684,6 +684,7 @@ router.get('/following', async (req, res) => {
 
         for (const f of getUser.following) {
             const getFollowing = await users.findOne({ _id: f })
+            if(!getFollowing) continue;
             const user_object = {
                 _id: f,
                 username: getFollowing.username,
@@ -725,6 +726,7 @@ router.get('/followers', async (req, res) => {
 
         for (const f of getUser.followers) {
             const getFollowers = await users.findOne({ _id: f })
+            if(!getFollowers) continue;
             const user_object = {
                 _id: f,
                 username: getFollowers.username,
