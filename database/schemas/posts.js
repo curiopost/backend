@@ -4,6 +4,7 @@ const posts = mongoose.Schema({
     _id: String,
     user_id: String,
     title: String,
+    censored: Boolean,
     content: String,
     attachment_url: String,
     created_at: Number,

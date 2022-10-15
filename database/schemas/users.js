@@ -8,6 +8,7 @@ const users = mongoose.Schema({
    password: String,
    verified: Boolean,
    pid: String,
+   censored: Boolean,
     created_at: Number,
     following: Array,
     followers: Array,

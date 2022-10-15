@@ -349,9 +349,9 @@ router.get('/search', async (req, res) => {
             return res.status(404).json({ success: false, message: "No results found.", code: 404 })
         }
 
-        const searchUser = await users.find().select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
+        const searchUser = await users.find({censored: false || undefined}).select('-password').select('-pid').select('-interests').select('-verified').select('-notifications').select('-email')
 
-        const searchPost = await posts.find()
+        const searchPost = await posts.find({censored: false || undefined})
 
         const getValidUsersFoundByName = searchUser.filter(i => i.name.includes(q))
         const getValidUsersFoundByUserName = searchUser.filter(i => i.username.includes(q))
@@ -491,7 +491,7 @@ router.get('/topics', async (req, res) => {
             return res.status(400).json({ success: false, message: "Tag is required.", code: 400 })
         }
 
-        const Getposts = await posts.find()
+        const Getposts = await posts.find({censored: false || undefined})
 
         const Tagposts = Getposts.filter(i => i.topics.includes(topic))
 
@@ -523,7 +523,9 @@ router.get('/topics', async (req, res) => {
             results.push(post_object)
         }
 
-        return res.status(200).json({ success: true, message: "Topic found.", posts: results, code: 200 })
+        const sortResults = results.sort((a, b) => (parseFloat(b.created_at) - parseFloat(a.created_at)))
+
+        return res.status(200).json({ success: true, message: "Topic found.", posts: sortResults, code: 200 })
 
     } catch (e) {
 
@@ -540,7 +542,7 @@ router.get('/feeds', verifyUserToken, async (req, res) => {
     try {
         const user = req.authorized_account
 
-        const getPosts = await posts.find()
+        const getPosts = await posts.find({censored: false || undefined})
         const userTopics = [...new Set(user.interests)]
 
         const filterByinterests = getPosts.filter(i => i.topics.some(topic => userTopics.includes(topic)))
