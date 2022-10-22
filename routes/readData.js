@@ -754,4 +754,65 @@ router.get('/followers', async (req, res) => {
 })
 
 
+router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
+    try {
+    const user = req.authorized_account;
+    let following = user.following.sort(() => Math.random() - Math.random()).slice(0, 5);
+
+    const suggestions = []
+
+    
+
+    for (const f of following) {
+        const user_fol = await users.findOne({_id: f, censored: false || undefined})
+        if(!user_fol) continue;
+        const randomFollowing = user_fol.following[Math.floor(Math.random()*user_fol.following.length)] || null;
+        if(randomFollowing === user._id) continue;
+        if(user.following.includes(randomFollowing)) continue;
+        if(randomFollowing === null) continue;
+       const findUser = await users.findOne({_id: randomFollowing})
+       if(!findUser) break;
+       const user_obj = {
+        _id: findUser._id,
+        username: findUser.username,
+        name: findUser.name,
+        avatar_url: findUser.avatar_url,
+        following: findUser.following,
+        followers: findUser.followers,
+        reason_for_suggestions: 'Followed by people you follow'
+       }
+       suggestions.push(user_obj)
+
+        
+        
+    }
+
+    if(suggestions.length < 1 || following.length < 1) {
+        const FindRandomUsersToSugges = await users.find({verified: true, censored: false || undefined})
+        const FindRandomUsersToSuggest = FindRandomUsersToSugges.sort(() => Math.random() - Math.random()).slice(0, 5);
+
+        for (const ru of FindRandomUsersToSuggest) {
+            const user_obj = {
+                _id: ru._id,
+                username: ru.username,
+                name: ru.name,
+                avatar_url: ru.avatar_url,
+                following: ru.following,
+                followers: ru.followers,
+                reason_for_suggestions: 'Recommended for You'
+               }
+               suggestions.push(user_obj)
+
+        }
+
+    }
+
+    return res.status(200).json({success: true, message: "Here are your suggested users", suggestions: suggestions, code: 200})
+} catch (e) {
+    console.error(e)
+    return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+}
+
+})
+
 module.exports = router;
