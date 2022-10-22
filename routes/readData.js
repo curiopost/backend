@@ -789,7 +789,7 @@ router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
 
     if(suggestions.length < 3 || following.length < 1) {
         const FindRandomUsersToSugges = await users.find({verified: true, censored: false || undefined})
-        const filterUsers = FindRandomUsersToSugges.filter(u => u.following.includes(user._id))
+        const filterUsers = FindRandomUsersToSugges.filter(u => u.followers.includes(user._id))
         const FindRandomUsersToSuggest = filterUsers.sort(() => Math.random() - Math.random()).slice(0, 6);
 
         for (const ru of FindRandomUsersToSuggest) {
