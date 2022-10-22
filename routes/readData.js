@@ -778,8 +778,7 @@ router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
         name: findUser.name,
         avatar_url: findUser.avatar_url,
         following: findUser.following,
-        followers: findUser.followers,
-        reason_for_suggestions: 'Followed by people you follow'
+        followers: findUser.followers
        }
        suggestions.push(user_obj)
 
@@ -802,8 +801,7 @@ router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
                 name: ru.name,
                 avatar_url: ru.avatar_url,
                 following: ru.following,
-                followers: ru.followers,
-                reason_for_suggestions: 'Recommended for You'
+                followers: ru.followers
                }
                suggestions.push(user_obj)
 
