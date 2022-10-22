@@ -757,7 +757,7 @@ router.get('/followers', async (req, res) => {
 router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
     try {
     const user = req.authorized_account;
-    let following = user.following.sort(() => Math.random() - Math.random()).slice(0, 5);
+    let following = user.following.sort(() => Math.random() - Math.random()).slice(0, 10);
 
     const suggestions = []
 
@@ -789,7 +789,7 @@ router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
 
     if(suggestions.length < 1 || following.length < 1) {
         const FindRandomUsersToSugges = await users.find({verified: true, censored: false || undefined})
-        const FindRandomUsersToSuggest = FindRandomUsersToSugges.sort(() => Math.random() - Math.random()).slice(0, 5);
+        const FindRandomUsersToSuggest = FindRandomUsersToSugges.sort(() => Math.random() - Math.random()).slice(0, 10);
 
         for (const ru of FindRandomUsersToSuggest) {
             if(user.following.includes(ru._id)) continue;
