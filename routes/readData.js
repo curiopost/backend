@@ -811,7 +811,9 @@ router.get("/suggested_accounts", verifyUserToken, async(req, res) => {
 
     }
 
-    return res.status(200).json({success: true, message: "Here are your suggested users", suggestions: suggestions, code: 200})
+    const nonDuplicatedSugg = [...new Set(suggestions)]
+
+    return res.status(200).json({success: true, message: "Here are your suggested users", suggestions: nonDuplicatedSugg, code: 200})
 } catch (e) {
     console.error(e)
     return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
