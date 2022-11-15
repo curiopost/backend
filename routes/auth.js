@@ -31,6 +31,23 @@ router.post('/register', antispamauth, async (req, res) => {
     try {
         const ID = aerect.generateID(11)
         const PID = aerect.generateID(59)
+        const {r_key} = req.query;
+        if(!r_key) {
+            return res.status(400).json({success: false, message: "Your using an outdated version of curiopost, reload your page with ctrl + f5 or by clicking the three dots and clicking reload on your phone.", code: 400})
+        }
+
+        const v_url = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${r_key}`;
+        const validateHuman = await fetch(v_url,{
+            method: 'GET'
+        })
+        const validateHumanjson = await validateHuman.json()
+
+        if(!validateHumanjson.success) {
+           
+            return res.status(400).json({success: false, message: "Could not verify you as a human.", code: 400}) 
+        }
+
+
         const { name, username, email, password } = req.body;
 
         if (!name || !username || !email || !password) {
@@ -148,6 +165,21 @@ router.post('/verify', antispamauth, verifyVerificationToken, async (req, res) =
 })
 
 router.post('/login', antispamauth, async (req, res) => {
+    const {r_key} = req.query;
+    if(!r_key) {
+        return res.status(400).json({success: false, message: "Your using an outdated version of curiopost, reload your page with ctrl + f5 or by clicking the three dots and clicking reload on your phone.", code: 400})
+    }
+
+    const v_url = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${r_key}`;
+    const validateHuman = await fetch(v_url,{
+        method: 'GET'
+    })
+    const validateHumanjson = await validateHuman.json()
+
+    if(!validateHumanjson.success) {
+       
+        return res.status(400).json({success: false, message: "Could not verify you as a human.", code: 400}) 
+    }
 
     const { email, password } = req.body;
 
