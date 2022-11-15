@@ -12,6 +12,7 @@ const verifyVerificationToken = require('../middleware/verifyVerificationToken')
 const verifyUserToken = require('../middleware/verifyUserToken')
 const abbreviate = require('number-abbreviate');
 const validator = require('validator');
+const fetch = require('node-fetch')
 
 const antispamlimitobject = {
     success: false,
