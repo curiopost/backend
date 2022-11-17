@@ -13,7 +13,10 @@ const verifyUserToken = require('../middleware/verifyUserToken')
 const abbreviate = require('number-abbreviate');
 const validator = require('validator');
 const fetch = require('node-fetch')
-
+const randomNumber = require("random-number-csprng");
+const otps = require('../database/schemas/otps');
+const verifyOtpReplyToken = require('../middleware/verifyOtpReplyToken')
+const verifyPasswordResetToken = require('../middleware/verifyPasswordResetToken')
 const antispamlimitobject = {
     success: false,
     message: "Too many authentication requests in a short period of time, please try again in a few minutes.",
@@ -166,6 +169,7 @@ router.post('/verify', antispamauth, verifyVerificationToken, async (req, res) =
 })
 
 router.post('/login', antispamauth, async (req, res) => {
+    
     const {r_key} = req.query;
     if(!r_key) {
         return res.status(400).json({success: false, message: "Your using an outdated version of curiopost, reload your page with ctrl + f5 or by clicking the three dots and clicking reload on your phone.", code: 400})
@@ -368,4 +372,75 @@ router.post('/updatepassword', antispamauth, verifyUserToken, async (req, res) =
     }
 })
 
+router.post('/request_recovery', antispamauth, async(req, res) => {
+   
+   // make sure to uncomment the below before deploying to production.
+ 
+   
+   const {r_key} = req.query;
+    if(!r_key) {
+        return res.status(400).json({success: false, message: "Could not verify you as a human.", code: 400})
+    }
+
+    const v_url = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.SECRET_KEY}&response=${r_key}`;
+    const validateHuman = await fetch(v_url,{
+        method: 'GET'
+    })
+    const validateHumanjson = await validateHuman.json()
+
+    if(!validateHumanjson.success) {
+       
+        return res.status(400).json({success: false, message: "Could not verify you as a human.", code: 400}) 
+    }
+    try {
+
+        const { email } = req.body;
+        if(!email) {
+            return res.status(400).json({success: false, message: "Email is required.", code: 400})
+        }
+
+        const findUser = await users.findOne({email: email});
+        if(!findUser) {
+            return res.status(400).json({success: false, message: "Email is not registered", code: 400})
+        }
+
+        const u_id = findUser._id;
+
+        const OTP = await randomNumber(100000,999999);
+        const requestId = aerect.generateID(11)
+
+        await otps.create({
+            _id: requestId,
+            user_id: u_id,
+            otp: OTP,
+            expires_at: Date.now()+180000,
+            failed_attempts: 0
+
+
+        })
+        const otpData = {
+            type: 'user_otp_reply_token',
+            _id: requestId
+
+        }
+
+        const replyToken = jwt.sign(otpData, JWT_SECRET, {expiresIn: '3m'})
+        
+        await sendEmail(`Hi ${findUser.name}\n\nWe recieved a request to reset your password. Your code to reset your password is: ${OTP}\n\nThis code expires in 3 minutes, if you didn't request this code then ignore this email.\n\nThanks - The Curiopost Team`, `${OTP} is your Curiopost recovery code`, findUser.email)
+        
+        return res.status(200).json({success: true, message: "OTP send to your email.", reply_token: replyToken, code: 200})
+
+
+
+    } catch (e) {
+
+        console.error(e)
+
+        return res.status(500).json({ success: false, message: "Unexpected error occured on our end, please try again later.", code: 500 })
+
+    }
+})
+
+router.post('/verify_otp', verifyOtpReplyToken)
+router.post('/recover_password', verifyPasswordResetToken)
 module.exports = router;
